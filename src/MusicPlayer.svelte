@@ -6,7 +6,7 @@
         {
             title: "Coming Up Posie",
             src: "/songs/coming-up-posie.m4a",
-            duration: "2:33",
+            duration: "2:07",
         },
         {
             title: "Turtlehead Poo",
@@ -22,6 +22,7 @@
             title: "Don't Leave Me",
             src: "/songs/dont-leave-me.mp3",
             duration: "1:49",
+            albumArt: "/songs/dont-leave-me.jpg",
         },
         {
             title: "Peppero Day",
@@ -63,6 +64,7 @@
     function onKeyDown(e) {
         switch (e.keyCode) {
             case 32: // space
+                e.preventDefault();
                 if (isPlaying) {
                     pause();
                 } else {
@@ -83,43 +85,21 @@
     });
 
     function updateMedia() {
+        function toImage(src) {
+            return {
+                src,
+                sizes: "878x878",
+                type: "image/png",
+            };
+        }
         if ("mediaSession" in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentSong.title,
                 artist: "Toot Blaster",
                 album: "The Definitive Collection",
-                artwork: [
-                    {
-                        src: "https://dummyimage.com/96x96",
-                        sizes: "96x96",
-                        type: "image/png",
-                    },
-                    {
-                        src: "https://dummyimage.com/128x128",
-                        sizes: "128x128",
-                        type: "image/png",
-                    },
-                    {
-                        src: "https://dummyimage.com/192x192",
-                        sizes: "192x192",
-                        type: "image/png",
-                    },
-                    {
-                        src: "https://dummyimage.com/256x256",
-                        sizes: "256x256",
-                        type: "image/png",
-                    },
-                    {
-                        src: "https://dummyimage.com/384x384",
-                        sizes: "384x384",
-                        type: "image/png",
-                    },
-                    {
-                        src: "https://dummyimage.com/512x512",
-                        sizes: "512x512",
-                        type: "image/png",
-                    },
-                ],
+                artwork: currentSong.albumArt
+                    ? [toImage(currentSong.albumArt)]
+                    : [],
             });
         }
     }
@@ -179,7 +159,18 @@
 
 <div class="wrapper">
     <div class="now-playing">
-        <h3>{currentSong.title}</h3>
+        {#if currentSong.albumArt}
+            <img
+                alt={currentSong.title}
+                src={currentSong.albumArt}
+                width="100%"
+                height="100%"
+            />
+        {:else}
+            <div style="padding: 16px">
+                <h3>{currentSong.title}</h3>
+            </div>
+        {/if}
     </div>
 
     <div class="controls">
@@ -193,13 +184,14 @@
     </div>
 
     <div class="song-list">
-        {#each playlist as { title }, index}
+        {#each playlist as { title, duration }, index}
             <button
                 class="song"
                 class:playing={index === currentSongIndex}
                 on:click={playAt(index)}
             >
-                {title}
+                <p>{title}</p>
+                <p>{duration}</p>
             </button>
         {/each}
     </div>
@@ -220,10 +212,10 @@
         max-height: 800px;
         min-height: 300px;
         border: 1px solid #1ed760;
-        padding: 16px;
         display: flex;
         justify-content: center;
         align-items: center;
+        width: 100%;
     }
 
     .song-list {
@@ -236,8 +228,13 @@
         border-radius: 8px;
         padding: 16px;
     }
+    .song-list p {
+        margin: 0;
+    }
     button.song {
         display: flex;
+        justify-content: space-between;
+        align-items: center;
         color: #fff;
         background: none;
         border: none;
