@@ -37,6 +37,8 @@
 
     let currentSongIndex = 0;
     let isPlaying = false;
+    $: currentSong = playlist[currentSongIndex % playlist.length];
+
     let sound;
 
     function loadCurrentSong() {
@@ -47,14 +49,85 @@
             onend: playNextSong,
         });
     }
-    onMount(loadCurrentSong);
+    function mountActions() {
+        loadCurrentSong();
+        navigator.mediaSession.setActionHandler("play", play);
+        navigator.mediaSession.setActionHandler("pause", pause);
+        navigator.mediaSession.setActionHandler("stop", stop);
+        navigator.mediaSession.setActionHandler("nexttrack", playNextSong);
+        navigator.mediaSession.setActionHandler(
+            "previoustrack",
+            playPreviousSong
+        );
+    }
+    function onKeyDown(e) {
+        switch (e.keyCode) {
+            case 32: // space
+                if (isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+                break;
+            case 37: // left
+                playPreviousSong();
+                break;
+            case 39:
+                playNextSong();
+                break;
+        }
+    }
+    onMount(mountActions);
     onDestroy(() => {
         sound?.unload();
     });
 
+    function updateMedia() {
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentSong.title,
+                artist: "Toot Blaster",
+                album: "The Definitive Collection",
+                artwork: [
+                    {
+                        src: "https://dummyimage.com/96x96",
+                        sizes: "96x96",
+                        type: "image/png",
+                    },
+                    {
+                        src: "https://dummyimage.com/128x128",
+                        sizes: "128x128",
+                        type: "image/png",
+                    },
+                    {
+                        src: "https://dummyimage.com/192x192",
+                        sizes: "192x192",
+                        type: "image/png",
+                    },
+                    {
+                        src: "https://dummyimage.com/256x256",
+                        sizes: "256x256",
+                        type: "image/png",
+                    },
+                    {
+                        src: "https://dummyimage.com/384x384",
+                        sizes: "384x384",
+                        type: "image/png",
+                    },
+                    {
+                        src: "https://dummyimage.com/512x512",
+                        sizes: "512x512",
+                        type: "image/png",
+                    },
+                ],
+            });
+        }
+    }
+
     function play() {
         sound?.play();
         isPlaying = true;
+        updateMedia();
     }
     function playAt(index) {
         return () => {
@@ -106,7 +179,7 @@
 
 <div class="wrapper">
     <div class="now-playing">
-        <h3>{playlist[currentSongIndex].title}</h3>
+        <h3>{currentSong.title}</h3>
     </div>
 
     <div class="controls">
@@ -131,6 +204,7 @@
         {/each}
     </div>
 </div>
+<svelte:window on:keydown={onKeyDown} />
 
 <style>
     .wrapper {
