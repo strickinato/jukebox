@@ -214,7 +214,9 @@
         /* dang yo */
     -->
 
+    <!--
     {#if deferredEvent}<div class="install-base">Install</div>{/if}
+    -->
 
     <div class="song-list">
         {#each playlist as { title, duration }, index}
