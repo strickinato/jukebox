@@ -2,7 +2,14 @@
     import { onMount, onDestroy } from "svelte";
     import { Howl } from "howler";
 
+    let deferredEvent;
+
     let playlist = [
+        {
+            title: "The Armada Rides",
+            src: "/songs/the-armada-rides.mp3",
+            duration: "2:41",
+        },
         {
             title: "Coming Up Posie",
             src: "/songs/coming-up-posie.m4a",
@@ -60,6 +67,10 @@
             "previoustrack",
             playPreviousSong
         );
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredEvent = e;
+        });
     }
     function onKeyDown(e) {
         switch (e.keyCode) {
@@ -155,9 +166,27 @@
             }
         }
     }
+    async function installFn(e) {
+        if (deferredEvent) {
+            deferredEvent.prompt();
+        }
+    }
+
+    let interested = false;
 </script>
 
 <div class="wrapper">
+    {#if deferredEvent && interested}
+        <div class="install-prompt">
+            <p>
+                Hi! This is a weird thing. But install me. Make me a part of
+                your system.
+            </p>
+            <button on:click={installFn}
+                >install me and make me a part of your life</button
+            >
+        </div>
+    {/if}
     <div class="now-playing">
         {#if currentSong.albumArt}
             <img
@@ -172,7 +201,6 @@
             </div>
         {/if}
     </div>
-
     <div class="controls">
         <button id="previous-button" on:click={playPreviousSong}>&lt;</button>
         {#if isPlaying}
@@ -182,6 +210,11 @@
         {/if}
         <button id="next-button" on:click={playNextSong}>&gt;</button>
     </div>
+    <!--
+        /* dang yo */
+    -->
+
+    {#if deferredEvent}<div class="install-base">Install</div>{/if}
 
     <div class="song-list">
         {#each playlist as { title, duration }, index}
@@ -279,5 +312,28 @@
     .controls #pause-button {
         height: 60px;
         width: 60px;
+    }
+    .install-prompt {
+        padding: 16px;
+        color: black;
+        width: calc(100% - 32px);
+        height: 50%;
+        position: fixed;
+        top: 5%;
+        background-color: #1ed760;
+        border-radius: 8px;
+    }
+    .install-prompt button {
+        width: 100%;
+        height: 44px;
+    }
+    .install-base {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        background-color: var(--background-base);
+        border-radius: 8px;
+        padding: 16px;
     }
 </style>
