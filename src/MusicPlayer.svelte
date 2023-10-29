@@ -6,6 +6,11 @@
 
     let playlist = [
         {
+            title: "BooBees",
+            src: "/songs/boobees.mp3",
+            duration: "1:40",
+        },
+        {
             title: "The Armada Rides",
             src: "/songs/the-armada-rides.mp3",
             duration: "2:41",
